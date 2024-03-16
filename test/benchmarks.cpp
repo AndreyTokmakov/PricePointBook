@@ -19,45 +19,6 @@ Description :
 #include "PricePointBook.h"
 #include "utils/TestUtils.h"
 
-namespace
-{
-    using namespace TestUtils;
-
-    // Coздаёт из Snapshota набор Event-ов состоящий из 10/4 присутвтвующими в снапшоте ценани
-    // (для их поиска и обновления) и частично отствующими в снапшоте ценами - для их добавления
-    std::vector<Types::Event> generateTestEvents(const Types::Snapshot& snapshot,
-                                                 const std::string& symbol)
-    {
-        const size_t bundleSize { snapshot.asks.size() / 4 };
-        std::vector<Types::Event> testEvents;
-        testEvents.reserve(bundleSize);
-
-        const Types::price_type maxBuyPrice = snapshot.bids.front().price, minBuyPrice = snapshot.bids.back().price;
-        const Types::price_type maxSellPrice = snapshot.asks.front().price, minSellPrice = snapshot.asks.back().price;
-
-        for (size_t idx = 0; idx < bundleSize; ++idx)
-        {
-            Types::Event& event = testEvents.emplace_back(symbol);
-            for (int n = 0; n < 10; ++n)
-            {
-                const int32_t randAskID = randomIntegerInRange(0, static_cast<int32_t>(snapshot.asks.size() - 1));
-                event.sellOrders.push_back(snapshot.asks[randAskID]);
-
-                const int32_t ranBidID = randomIntegerInRange(0, static_cast<int32_t>(snapshot.bids.size() - 1));
-                event.buyOrders.push_back(snapshot.bids[ranBidID]);
-            }
-
-            for (int n = 0; n < 4; ++n)
-            {
-                /** This will generate a missing/new price levels or orders ... i hope ))) **/
-                event.sellOrders.emplace_back(randomFloatInRange(minSellPrice, maxSellPrice), 1);
-                event.buyOrders.emplace_back(randomFloatInRange(minBuyPrice, maxBuyPrice), 1);
-            }
-        }
-
-        return testEvents;
-    }
-}
 
 struct BaseFixture
 {
@@ -89,7 +50,7 @@ BOOST_AUTO_TEST_SUITE(Benchmarking)
         Utilities::parseSnapshot(R"(../../test/data/snapshot_BNBBTC_4000.json)", snapshot);
 
         /** Test data preparation and initialization **/
-        const std::vector<Types::Event> testEvents{generateTestEvents(snapshot, symbolDefault)};
+        const std::vector<Types::Event> testEvents { TestUtils::generateTestEvents(snapshot, symbolDefault) };
         ordersTotal = testEvents.size() * (testEvents.front().buyOrders.size() * 2);
         book.loadSnapshot(snapshot, symbolDefault);
 
@@ -117,7 +78,7 @@ BOOST_AUTO_TEST_SUITE(Benchmarking)
         std::vector<std::vector<Types::Event>> testEventsForSymbols;
         testEventsForSymbols.reserve(symbolsCount);
         for (const std::string& symbol: symbols) {
-            testEventsForSymbols.push_back( generateTestEvents(snapshot, symbol));
+            testEventsForSymbols.push_back(TestUtils::generateTestEvents(snapshot, symbol));
         }
         ordersTotal = symbolsCount * testEventsForSymbols.front().size() *
                 (testEventsForSymbols.front().front().buyOrders.size() * 2);

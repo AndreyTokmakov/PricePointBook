@@ -28,6 +28,13 @@ namespace TestUtils
 
     [[nodiscard("Do not forget to use the return value. Call could be expensive")]]
     std::vector<std::string> getUniqueSymbols(int size = 10);
+
+    [[nodiscard("Do not forget to use the return value. Call could be expensive")]]
+    std::vector<Types::Event> generateTestEvents(const Types::Snapshot& snapshot,
+                                                 const std::string& symbol,
+                                                 uint32_t priceHitCount = 10,
+                                                 uint32_t priceMissCount = 4,
+                                                 uint32_t factor = 4);
 }
 
 #endif //PRICEPOINTBOOK_TESTUTILS_H

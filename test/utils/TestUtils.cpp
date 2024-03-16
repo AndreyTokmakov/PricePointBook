@@ -76,4 +76,42 @@ namespace TestUtils
         }
         return static_cast<double>(resultKb / bytesInKB);
     }
+
+    // Coздаёт из Snapshota набор Event-ов состоящий из 10/4 (by Default at least) присутвтвующими в снапшоте ценани
+    // (для их поиска и обновления) и частично отствующими в снапшоте ценами - для их добавления
+    std::vector<Types::Event> generateTestEvents(const Types::Snapshot& snapshot,
+                                                 const std::string& symbol,
+                                                 uint32_t priceHitCount,
+                                                 uint32_t priceMissCount,
+                                                 uint32_t factor)
+    {
+        const size_t bundleSize { snapshot.asks.size() / factor };
+        std::vector<Types::Event> testEvents;
+        testEvents.reserve(bundleSize);
+
+        const Types::price_type maxBuyPrice = snapshot.bids.front().price, minBuyPrice = snapshot.bids.back().price;
+        const Types::price_type maxSellPrice = snapshot.asks.front().price, minSellPrice = snapshot.asks.back().price;
+
+        for (size_t idx = 0; idx < bundleSize; ++idx)
+        {
+            Types::Event& event = testEvents.emplace_back(symbol);
+            for (uint32_t n = 0; n < priceHitCount; ++n)
+            {
+                const int32_t randAskID = randomIntegerInRange(0, static_cast<int32_t>(snapshot.asks.size() - 1));
+                event.sellOrders.push_back(snapshot.asks[randAskID]);
+
+                const int32_t ranBidID = randomIntegerInRange(0, static_cast<int32_t>(snapshot.bids.size() - 1));
+                event.buyOrders.push_back(snapshot.bids[ranBidID]);
+            }
+
+            for (uint32_t n = 0; n < priceMissCount; ++n)
+            {
+                /** This will generate a missing/new price levels or orders ... i hope ))) **/
+                event.sellOrders.emplace_back(randomFloatInRange(minSellPrice, maxSellPrice), 1);
+                event.buyOrders.emplace_back(randomFloatInRange(minBuyPrice, maxBuyPrice), 1);
+            }
+        }
+
+        return testEvents;
+    }
 }
