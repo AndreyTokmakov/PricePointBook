@@ -48,9 +48,12 @@ The of that is to try implement a data structure capable of handling events from
 - Move to the build folder: `cd build/tests`
 - Run the unit tests: `./unit_tests -p`
   </br></br>![UnitTestsLocal](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/unit_tests_run.png)
-- Run the unit tests: `./benchmarks -p`
+- Run the performance benchmarks: `./benchmarks -p`
   </br></br>![UnitTestsLocal](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/benchmarks.png)
-- Run the unit tests: `./memory_usage -p`
+- Run the memory usage tests `./memory_usage -- <Number of symbols> <number of price hit events> <number of price miss events>`
+  </br>Example `./memory_usage -- 250 50 10` to run MemoryConsumption test for the <b>250</b> distinct symbols and the list of 
+  </br> events will be generated (as the payload) and each event will have <b>50</b> Orders for the exising prices and <b>10</b> missing price levels
+  </br> for both buy and sell sides.
   </br></br>![UnitTestsLocal](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/memory_usage_run.png)
 
 

@@ -77,8 +77,8 @@ namespace TestUtils
         return static_cast<double>(resultKb / bytesInKB);
     }
 
-    // Coздаёт из Snapshota набор Event-ов состоящий из 10/4 (by Default at least) присутвтвующими в снапшоте ценани
-    // (для их поиска и обновления) и частично отствующими в снапшоте ценами - для их добавления
+    // Creates from a Snapshot a set of Events consisting of 10/4 (by Default at least) prices present in the snapshot
+    // (for searching and updating them) and prices partially absent in the snapshot - for adding them
     std::vector<Types::Event> generateTestEvents(const Types::Snapshot& snapshot,
                                                  const std::string& symbol,
                                                  uint32_t priceHitCount,
