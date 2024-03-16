@@ -64,4 +64,5 @@ feedback on the status of the project and the presence/absence of kind of regres
 3. At each launch, the build status of the project is checked and Unit tests are run
    </br></br>![workflows](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/actions_1_workflows.png)
    </br></br>![Unit-tests status](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/actions_2_unit_tests.png)
-   </br></br>![Pipeline](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/actions_3_pipeline.png)
+   </br></br>![Pipeline1](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/actions_3_pipeline.png)
+   </br></br>![Pipeline2](https://github.com/AndreyTokmakov/PricePointBook/blob/metadata/images/actions_3_pipeline_2.png)
