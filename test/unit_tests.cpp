@@ -156,6 +156,20 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
 
+    // Check that if there is no uploaded snapshot and processed events, the BID should be missing
+    BOOST_AUTO_TEST_CASE(EmptySnapshot_NoBid)
+    {
+        BOOST_REQUIRE_EQUAL(book.getBid(symbolDefault).has_value(), false);
+    }
+
+    // Check that if there is no uploaded snapshot and processed events, the ASK should be missing
+    BOOST_AUTO_TEST_CASE(EmptySnapshot_NoAsk)
+    {
+        BOOST_REQUIRE_EQUAL(book.getAsk(symbolDefault).has_value(), false);
+    }
+
+    // We make sure that in the case of a loaded snapshot and when processing an event with a
+    // price exceeding the current BID, its value should be updated
     BOOST_AUTO_TEST_CASE(HandleEvent_BID_HasToBeUpdated)
     {
         tester.loadSnapshot(R"(../../test/data/snapshot_100.json)", symbolDefault);
@@ -169,6 +183,8 @@ BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
         BOOST_REQUIRE_EQUAL(book.getBid(symbolDefault).value() , dstBid);
     }
 
+    // We make sure that in the case of a loaded snapshot and when processing an event with a
+    // price less than current ASK, its value should be updated
     BOOST_AUTO_TEST_CASE(HandleEvent_ASK_HasToBeUpdated)
     {
         tester.loadSnapshot(R"(../../test/data/snapshot_100.json)", symbolDefault);
@@ -182,6 +198,38 @@ BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
         BOOST_REQUIRE_EQUAL(book.getAsk(symbolDefault).value() , dstAsk);
     }
 
+    // check that the order book maintain BID in sorted order when processing events
+    BOOST_AUTO_TEST_CASE(HandleEvent_Maintain_BID)
+    {
+        Types::price_type bid = std::numeric_limits<Types::price_type>::min(), price = 0.0f;
+        for (int i = 0; i < 10; ++i)
+        {
+            price = TestUtils::randomFloatInRange(0.0, 5.0);
+            bid = std::max(bid, price);
+            Types::Event event = Utilities::makeEvent(symbolDefault,{{price,5} },{});
+            book.handleEvent(event);
+
+            BOOST_REQUIRE_EQUAL(book.getBid(symbolDefault).value() , bid);
+        }
+    }
+
+    // check that the order book maintain ASK in sorted order when processing events
+    BOOST_AUTO_TEST_CASE(HandleEvent_Maintain_ASK)
+    {
+        Types::price_type ask = std::numeric_limits<Types::price_type>::max(), price = 0.0f;
+        for (int i = 0; i < 10; ++i)
+        {
+            price = TestUtils::randomFloatInRange(0.0, 5.0);
+            ask = std::min(ask, price);
+            Types::Event event = Utilities::makeEvent(symbolDefault,{},{{price,5}});
+            book.handleEvent(event);
+
+            BOOST_REQUIRE_EQUAL(book.getAsk(symbolDefault).value() , ask);
+        }
+    }
+
+    // We make sure that in the case of a loaded snapshot and when processing an event with a price
+    // exceeding the current BID, its value should be updated --> shall be working for multiple Symbols
     BOOST_AUTO_TEST_CASE(HandleEvent_BID_HasToBeUpdated_MultipleSymbols)
     {
         const std::vector<std::string> symbols = TestUtils::getUniqueSymbols(10);
@@ -202,6 +250,8 @@ BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
         }
     }
 
+    // We make sure that in the case of a loaded snapshot and when processing an event with a
+    // price less than current ASK, its value should be updated --> shall be working for multiple Symbols
     BOOST_AUTO_TEST_CASE(HandleEvent_ASK_HasToBeUpdated_MultipleSymbols)
     {
         const std::vector<std::string> symbols = TestUtils::getUniqueSymbols(10);
@@ -222,6 +272,7 @@ BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
         }
     }
 
+    // BID shall be updated when processing event for same price level with quantity == 0
     BOOST_AUTO_TEST_CASE(HandleEvent_BID_Remove_ZeroQuantity)
     {
         tester.loadSnapshot(R"(../../test/data/snapshot_100.json)", symbolDefault);
@@ -233,6 +284,7 @@ BOOST_FIXTURE_TEST_SUITE(HandleEventsTests, BaseFixture)
         BOOST_REQUIRE_LE(book.getBid(symbolDefault).value() , bidBefore);
     }
 
+    // ASK shall be updated when processing event for same price level with quantity == 0
     BOOST_AUTO_TEST_CASE(HandleEvent_ASK_Remove_ZeroQuantity)
     {
         tester.loadSnapshot(R"(../../test/data/snapshot_100.json)", symbolDefault);
