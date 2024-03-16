@@ -1,0 +1,61 @@
+
+name: UnitTests
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+
+  # This workflow contains a single job called "unit_tests"
+  unit_tests:
+
+    name: PricePointBook Unit Tests
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    strategy:
+        matrix:
+          compiler:
+            - gcc-13 g++-13
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Packages
+        run: |
+            sudo apt-get update -qq
+            sudo apt-get install build-essential cmake make libboost-all-dev
+
+      - name: Clone JSON lib
+        run: |
+          git clone https://github.com/nlohmann/json.git ../json
+
+      - name: Build and compile
+        run: |
+          export CC=gcc-13 CXX=g++-13
+          mkdir build && cd build
+          cmake ..
+          make
+
+      - name: Run Unit-Tests
+        run: |
+          cd build/test
+          ./unit_tests -p -r detailed -l all
+
+      - name: Run Memory-Consumption Test
+        run: |
+          cd build/test
+          ./memory_usage -p
+
+      - name: Run Performance-Benchmark-Tests Test
+        run: |
+          cd build/test
+          ./benchmarks -p
